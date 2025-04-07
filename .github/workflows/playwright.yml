@@ -71,7 +71,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
           git add docs
-        shell: pwsh
+        shell: powershell
 
       - name: Commit Allure report if there are changes
         run: |
@@ -81,4 +81,4 @@ jobs:
           } else {
             Write-Output "No changes to commit"
           }
-        shell: pwsh
+        shell: powershell
