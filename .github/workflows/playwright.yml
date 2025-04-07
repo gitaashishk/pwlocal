@@ -66,6 +66,7 @@ jobs:
       - name: Generate Allure Report
         run: |
           npm install -g allure-commandline
+          export PATH=$(npm bin -g):$PATH
           allure generate ./allure-results --clean -o ./docs
 
       - name: Deploy Allure Report to GitHub Pages
