@@ -66,19 +66,19 @@ jobs:
       - name: Generate Allure Report
         run: npx allure generate ./allure-results --clean -o ./docs
 
-        name: Deploy Allure Report to GitHub Pages
-          run: |
-            git config user.name "github-actions[bot]"
-            git config user.email "actions@github.com"
-            git add docs
-          shell: pwsh
+      - name: Deploy Allure Report to GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add docs
+        shell: pwsh
 
-        name: Commit Allure report if there are changes
-          run: |
-            if (git status --porcelain) {
-              git commit -m "Update Allure report"
-              git push origin gh-pages
-            } else {
-              Write-Output "No changes to commit"
-            }
-          shell: pwsh
+      - name: Commit Allure report if there are changes
+        run: |
+          if (git status --porcelain) {
+            git commit -m "Update Allure report"
+            git push origin gh-pages
+          } else {
+            Write-Output "No changes to commit"
+          }
+        shell: pwsh
