@@ -8,8 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test-login:
     runs-on: self-hosted
+    name: Run login.spec.ts
 
     steps:
       - name: Checkout
@@ -26,27 +27,49 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run login tests
+        run: npx playwright test tests/login.spec.ts
 
-      - name: Upload Playwright HTML report
+      - name: Upload Allure Results (login)
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-html-report
-          path: playwright-report/
+          name: allure-results-login
+          path: allure-results/
           retention-days: 30
 
-      - name: Upload Allure Results
+  test-dashboard:
+    runs-on: self-hosted
+    name: Run dashboard.spec.ts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run dashboard tests
+        run: npx playwright test tests/dashboard.spec.ts
+
+      - name: Upload Allure Results (dashboard)
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results
+          name: allure-results-dashboard
           path: allure-results/
           retention-days: 30
 
   publish-report:
-    needs: test
+    needs: [test-login, test-dashboard]
     runs-on: self-hosted
     permissions:
       contents: write
@@ -57,14 +80,27 @@ jobs:
         with:
           ref: gh-pages
 
-      - name: Download Allure Results
+      - name: Download Allure Results - login
         uses: actions/download-artifact@v4
         with:
-          name: allure-results
-          path: allure-results
+          name: allure-results-login
+          path: allure-results-login
+
+      - name: Download Allure Results - dashboard
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-dashboard
+          path: allure-results-dashboard
+
+      - name: Combine Allure Results
+        run: |
+          mkdir combined-results
+          copy allure-results-login/* combined-results/
+          copy allure-results-dashboard/* combined-results/
+        shell: powershell
 
       - name: Generate Allure Report
-        run: npx allure generate ./allure-results --clean -o ./docs
+        run: npx allure generate ./combined-results --clean -o ./docs
 
       - name: Deploy Allure Report to GitHub Pages
         run: |
